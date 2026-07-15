@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from app.config import get_settings
@@ -19,3 +19,15 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def ensure_product_image_column() -> None:
+    """Small compatibility migration for databases created before image_url existed."""
+    inspector = inspect(engine)
+    if "products" not in inspector.get_table_names():
+        return
+    columns = {column["name"] for column in inspector.get_columns("products")}
+    if "image_url" in columns:
+        return
+    with engine.begin() as connection:
+        connection.execute(text("ALTER TABLE products ADD COLUMN image_url VARCHAR(500) NOT NULL DEFAULT ''"))

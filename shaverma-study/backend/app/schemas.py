@@ -41,6 +41,7 @@ class ProductOut(BaseModel):
     category: str
     name: str
     description: str
+    image_url: str = ""
     price: Decimal
 
     model_config = {"from_attributes": True}

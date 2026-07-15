@@ -42,6 +42,7 @@ class Product(Base):
     category: Mapped[str] = mapped_column(String(80), index=True)
     name: Mapped[str] = mapped_column(String(120))
     description: Mapped[str] = mapped_column(String(500), default="")
+    image_url: Mapped[str] = mapped_column(String(500), default="")
     price: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     active: Mapped[bool] = mapped_column(default=True)
 

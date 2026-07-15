@@ -1,6 +1,15 @@
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const MEDIA_BASE = (import.meta.env.VITE_MEDIA_BASE_URL || '').replace(/\/$/, '');
 
-export type Product = { id: number; category: string; name: string; description: string; price: number };
+export type Product = {
+  id: number;
+  category: string;
+  name: string;
+  description: string;
+  price: number;
+  image_url?: string | null;
+};
+
 export type OrderItem = { product_id: number; name: string; price: number; quantity: number };
 export type Order = {
   id: number;
@@ -20,9 +29,17 @@ async function request<T>(path: string, options: RequestInit = {}, token?: strin
   const response = await fetch(`${API}${path}`, { ...options, headers });
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
-    throw new Error(body.detail || `HTTP ${response.status}`);
+    const detail = typeof body.detail === 'string' ? body.detail : body.detail?.message;
+    throw new Error(detail || `HTTP ${response.status}`);
   }
   return response.json() as Promise<T>;
+}
+
+export function resolveMediaUrl(path?: string | null): string {
+  if (!path) return '/images/products/fallback.svg';
+  if (/^(https?:|data:|blob:)/i.test(path)) return path;
+  if (!MEDIA_BASE) return path.startsWith('/') ? path : `/${path}`;
+  return `${MEDIA_BASE}/${path.replace(/^\//, '')}`;
 }
 
 export function messengerPayload(): { platform: 'telegram' | 'max'; init_data: string } {

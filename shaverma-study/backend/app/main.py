@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import app.models  # noqa: F401
 from app.config import get_settings
-from app.db import Base, SessionLocal, engine
+from app.db import Base, SessionLocal, engine, ensure_product_image_column
 from app.routers import auth, health, menu, orders, staff
 from app.seed import seed
 
@@ -13,6 +13,7 @@ from app.seed import seed
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
+    ensure_product_image_column()
     with SessionLocal() as db:
         seed(db)
     yield

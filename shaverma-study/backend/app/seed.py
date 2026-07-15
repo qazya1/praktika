@@ -8,11 +8,11 @@ from app.security import hash_password
 
 
 PRODUCTS = [
-    ("Шаурма", "Классическая шаурма", "Курица, овощи и фирменный соус", "290.00"),
-    ("Шаурма", "Сырная шаурма", "Курица, сыр, овощи и соус", "330.00"),
-    ("Горячее", "Люля-кебаб", "Люля из говядины с луком", "390.00"),
-    ("Горячее", "Картофель фри", "Хрустящий картофель", "160.00"),
-    ("Напитки", "Морс", "Ягодный морс 0,5 л", "120.00"),
+    ("Шаурма", "Классическая шаурма", "Курица, овощи и фирменный соус", "290.00", "/images/products/classic.svg"),
+    ("Шаурма", "Сырная шаурма", "Курица, сыр, овощи и соус", "330.00", "/images/products/cheese.svg"),
+    ("Горячее", "Люля-кебаб", "Люля из говядины с луком", "390.00", "/images/products/kebab.svg"),
+    ("Горячее", "Картофель фри", "Хрустящий картофель", "160.00", "/images/products/fries.svg"),
+    ("Напитки", "Морс", "Ягодный морс 0,5 л", "120.00", "/images/products/mors.svg"),
 ]
 
 STAFF = [
@@ -23,9 +23,19 @@ STAFF = [
 
 
 def seed(db: Session) -> None:
-    if db.scalar(select(Product.id).limit(1)) is None:
-        for category, name, description, price in PRODUCTS:
-            db.add(Product(category=category, name=name, description=description, price=Decimal(price)))
+    existing_products = {product.name: product for product in db.scalars(select(Product)).all()}
+    for category, name, description, price, image_url in PRODUCTS:
+        product = existing_products.get(name)
+        if product is None:
+            db.add(Product(
+                category=category,
+                name=name,
+                description=description,
+                price=Decimal(price),
+                image_url=image_url,
+            ))
+        elif not product.image_url:
+            product.image_url = image_url
 
     existing = set(db.scalars(select(Staff.username)).all())
     for username, password, role, name in STAFF:

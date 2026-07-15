@@ -38,6 +38,7 @@ def test_main_order_flow_and_roles():
         menu = client.get("/api/menu")
         assert menu.status_code == 200
         assert len(menu.json()) >= 3
+        assert menu.json()[0]["image_url"]
 
         client_token = login_client(client)
         first_product = menu.json()[0]
